@@ -7,7 +7,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
   fastify
 ): Promise<void> => {
   fastify.get('/', async function (request, reply): Promise<
-    MemberTypeEntity[]
+  void | MemberTypeEntity[]
   > {});
 
   fastify.get(
@@ -17,7 +17,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         params: idParamSchema,
       },
     },
-    async function (request, reply): Promise<MemberTypeEntity> {}
+    async function (request, reply): Promise<void | MemberTypeEntity> {}
   );
 
   fastify.patch(
@@ -28,7 +28,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         params: idParamSchema,
       },
     },
-    async function (request, reply): Promise<MemberTypeEntity> {}
+    async function (request, reply): Promise<void | MemberTypeEntity> {}
   );
 };
 
