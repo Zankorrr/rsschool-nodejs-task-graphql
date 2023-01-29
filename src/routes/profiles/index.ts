@@ -38,7 +38,8 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
     },
     async function (request, reply): Promise<ProfileEntity | NoRequiredEntity> {
       const existingProfile = await fastify.db.profiles.findOne({key: "userId", equals: request.body.userId})
-      if(existingProfile || (request.body.memberTypeId !== 'basic' && request.body.memberTypeId !== 'business')) {
+      const type = await fastify.db.memberTypes.findOne({key: "id", equals: request.body.memberTypeId})
+      if(existingProfile || !type) {
         reply.badRequest()
         return new NoRequiredEntity("createProfile")
       } else {
