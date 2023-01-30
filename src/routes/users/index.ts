@@ -56,21 +56,32 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
     async function (request, reply): Promise<UserEntity | NoRequiredEntity> {
       const user = await fastify.db.users.findOne({key: "id", equals: request.params.id})
       if(user) {
+        const profile = await fastify.db.profiles.findOne({key: "userId", equals: user.id})
+        if(profile) {
+          await fastify.db.profiles.delete(profile.id)
+        }
+
+        const posts = await fastify.db.posts.findMany({key: "userId", equals: user.id})
+        if(posts.length) {
+          posts.map(async el => {
+            await fastify.db.posts.delete(el.id)
+          })
+        }
+
         const subscribers = await fastify.db.users.findMany({key: "subscribedToUserIds", inArray: user.id })
         if(subscribers.length) {
           subscribers.map(async el => {
-            const subscriber = await fastify.db.users.findOne({key: "id", equals: request.params.id})
+            const subscriber = await fastify.db.users.findOne({key: "id", equals: user.id})
             if(subscriber) {
               const newSubscribes = subscriber.subscribedToUserIds.filter(item => item !== el.id)
               await fastify.db.users.change(el.id, {...el, subscribedToUserIds: newSubscribes})
             }
           })
         }
-        reply.status(204).send()
-        return await fastify.db.users.delete(request.params.id)
+        return await fastify.db.users.delete(user.id)
       } else {
         reply.badRequest()
-        const err = new NoRequiredEntity("delete")
+        const err = new NoRequiredEntity("deleteUser")
         return err
       }
     }
