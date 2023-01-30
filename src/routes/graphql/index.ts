@@ -1,6 +1,6 @@
 import { UserType, ProfileType, PostType, MemberTypeType } from './types';
 import { FastifyPluginAsyncJsonSchemaToTs } from '@fastify/type-provider-json-schema-to-ts';
-import { GraphQLSchema, GraphQLObjectType, graphql, GraphQLList } from 'graphql';
+import { GraphQLSchema, GraphQLObjectType, GraphQLList, GraphQLNonNull, GraphQLID, graphql, GraphQLString } from 'graphql';
 import { graphqlBodySchema } from './schema';
 
 const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
@@ -41,19 +41,51 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
               resolve () {
                 return fastify.db.memberTypes.findMany()
               }
+            },
+            user: {
+                type: UserType,
+                args: {
+                  id: {
+                          type: new GraphQLNonNull(GraphQLID)
+                        },
+                },
+                resolve (_, args: { id: string }) {
+                  return fastify.db.users.findOne({key: "id", equals: args.id})
+                }
+              },
+            profile: {
+              type: ProfileType,
+              args: {
+                id: {
+                  type: new GraphQLNonNull(GraphQLID)
+                }
+              },
+              resolve (_, args: {id: string}) {
+                return fastify.db.profiles.findOne({key: "id", equals: args.id})
+              }
+            },
+            post: {
+              type: PostType,
+              args: {
+                id: {
+                  type: new GraphQLNonNull(GraphQLID)
+                }
+              },
+              resolve (_, args: {id: string}) {
+                return fastify.db.posts.findOne({key: "id", equals: args.id})
+              }
+            },
+            memberType: {
+              type: MemberTypeType,
+              args: {
+                id: {
+                  type: new GraphQLNonNull(GraphQLString)
+                }
+              },
+              resolve (_, args: {id: string}) {
+                return fastify.db.memberTypes.findOne({key: "id", equals: args.id})
+              }
             }
-
-            // user: {
-            //     type: UserType,
-            //     args: {
-            //       id: {
-            //               type: new GraphQLNonNull(GraphQLID)
-            //             },
-            //     },
-            //     resolve (_, args: { id: string }) {
-            //       return fastify.db.users.findOne({key: "id", equals: args.id})
-            //     }
-            //   },
           }
         })
       })
@@ -73,5 +105,5 @@ export default plugin;
 // {"firstName":"aaa", "lastName":"aaa", "email":"aaa"}
 // {"avatar":"aa", "sex":"aa", "birthday":"11", "country":"aa", "city":"aa", "street":"aa", "memberTypeId":"basic", "userId":""}
 // {"title": "a", "content": "a", "userId": ""}
-// {"query": "query {users {id, firstName, lastName, email}, profiles {avatar, sex, birthday, country, city, street, memberTypeId, userId, id}, posts {id, title, content, userId}, memberTypes {id, discount, monthPostsLimit}}"}
-// {"query":"query user ($userId:ID!){user (id: $userId) {id, firstName, lastName, email}}", "variables":{"userId":"cabb1942-f0f9-4ff7-b420-201946b5cfd3"}}
+// {"query": "query findAll {users {id, firstName, lastName, email}, profiles {avatar, sex, birthday, country, city, street, memberTypeId, userId, id}, posts {id, title, content, userId}, memberTypes {id, discount, monthPostsLimit}}"}
+// {"query": "query findOne ($userId:ID!, $profileId:ID!, $postId:ID!, $memberTypeId:ID!){user (id: $userId) {id, firstName, lastName, email}, profile (id: $profileId) {id, avatar, sex, birthday, country, city, street, memberTypeId, userId}, post (id: $postId) {id, title, content, userId}, memberType (id: $memberTypeId) {id, discount, monthPostsLimit}}", "variables":{"userId":"", "profileId":"", "postId":"", "memberTypeId":""}}
